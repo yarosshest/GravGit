@@ -85,6 +85,7 @@ def list_files(directory):
 # output graphviz
 def graphviz(directory):
     dot = gv.Digraph()
+    dot.rankdir = 'BT'
     for i in directory.iterdir():
         for file in i.iterdir():
             compressed_contents = open(file, 'rb').read()
@@ -92,23 +93,28 @@ def graphviz(directory):
             obj = terType(decompressed_contents)
             if obj == "commit":
                 dot.node(sha1(decompressed_contents).hexdigest(),
-                         label=sha1(decompressed_contents).hexdigest()+"\n"+obj+"\n"+commitGetComment(decompressed_contents).decode('utf-8'))
+                         label=sha1(decompressed_contents).hexdigest()+"\n"+obj+"\n"+commitGetComment(decompressed_contents).decode('utf-8'),
+                         shape="box")
                 dot.edge(sha1(decompressed_contents).hexdigest(), commitGetTree(decompressed_contents).decode("utf-8"))
                 if commitGetParent(decompressed_contents) is not None:
                     dot.edge(sha1(decompressed_contents).hexdigest(),
                              commitGetParent(decompressed_contents).decode("utf-8"))
             elif obj == "tree":
-                dot.node(sha1(decompressed_contents).hexdigest(), label=sha1(decompressed_contents).hexdigest()+"\n"+obj)
+                dot.node(sha1(decompressed_contents).hexdigest(),
+                         label=sha1(decompressed_contents).hexdigest()+"\n"+obj,
+                         shape="box")
                 for i in parseTree(decompressed_contents):
                     dot.edge(sha1(decompressed_contents).hexdigest(), i[1].decode("utf-8"))
                     if i[2] == b'100644':
-                        dot.node(i[1].decode("utf-8"), label=i[1].decode("utf-8")+"\n"+"blob"+"\n"+i[0].decode("utf-8"))
+                        dot.node(i[1].decode("utf-8"),
+                                 label=i[1].decode("utf-8")+"\n"+"blob"+"\n"+i[0].decode("utf-8"),
+                                 shape="box")
     dot.render('test-output/round-table.gv', view=True)
 
 
 if __name__ == '__main__':
     Path = Path(__file__).parent
-    Path = Path.joinpath(Path, 'output/.git/objects/')
+    Path = Path.joinpath(Path, 'input/.git/objects/')
     # print(binascii.b2a_hex((b'\x99$\x95\xea\xea0\xccD\x0b\x85\xf4\xedJ\xafI\nyE\x11[')))
     list_files(Path)
     graphviz(Path)
