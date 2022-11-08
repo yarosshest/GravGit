@@ -84,8 +84,7 @@ def list_files(directory):
 
 # output graphviz
 def graphviz(directory):
-    dot = gv.Digraph()
-    dot.rankdir = 'BT'
+    dot = gv.Digraph(graph_attr={'rankdir': 'BT'})
     for i in directory.iterdir():
         for file in i.iterdir():
             compressed_contents = open(file, 'rb').read()
